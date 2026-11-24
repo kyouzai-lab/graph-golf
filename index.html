@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#1f5a3a">
   <title>グラフ・ゴルフ</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236fb552'/%3E%3Cline x1='30' y1='44' x2='30' y2='10' stroke='%23fff' stroke-width='4'/%3E%3Cpath d='M30 10l22 7-22 7z' fill='%23e2403a'/%3E%3Cellipse cx='30' cy='46' rx='12' ry='6' fill='%23173d22'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
   <main id="app">
@@ -33,7 +33,7 @@
         <p class="sub">□ を 決めて カップを ねらえ！</p>
         <div class="kinds">
           <button class="kind on" data-kind="prop" aria-pressed="true">比例<small>y ＝ □ × x</small></button>
-          <button class="kind" data-kind="inv" aria-pressed="false">反比例<small>y ＝ □ ÷ x</small></button>
+          <button class="kind" data-kind="inv" aria-pressed="false">反比例<small>y ＝ <span class="ifrac"><span>□</span><span>x</span></span></small></button>
         </div>
         <div class="title-buttons">
           <button id="btnNew" class="big">はじめから</button>
@@ -55,7 +55,7 @@
           <span class="stars" id="totalStars"></span>
         </div>
         <div class="tries"><span>のこり</span><span class="balls" id="balls"></span></div>
-        <div class="eq">y ＝ <span class="box" id="box"></span> <span id="op">×</span> x</div>
+        <div class="eq">y ＝ <span class="eqbody" id="eqBody"><span class="box" id="box"></span><span class="op">×</span><span class="xvar">x</span></span></div>
         <p class="hint" id="hint"></p>
         <div class="pad" id="pad">
           <button data-k="1" style="grid-area:k1">1</button>
@@ -111,9 +111,9 @@
     </div>
 
   </main>
-  <script src="js/stages.js?v=9"></script>
-  <script src="js/store.js?v=9"></script>
-  <script src="js/graph.js?v=9"></script>
-  <script src="js/main.js?v=9"></script>
+  <script src="js/stages.js?v=10"></script>
+  <script src="js/store.js?v=10"></script>
+  <script src="js/graph.js?v=10"></script>
+  <script src="js/main.js?v=10"></script>
 </body>
 </html>

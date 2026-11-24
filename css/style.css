@@ -307,3 +307,13 @@ body[data-kind="inv"] .t-prop { display: none; }
 @keyframes glow2 { from { opacity: .55; } to { opacity: 1; } }
 .ticks text.hot { fill: var(--yellow); }
 @keyframes glow { from { opacity: .35; } to { opacity: .8; } }
+
+/* ---------- 式の形：比例は「□ × x」、反比例は分数「x ぶんの □」 ---------- */
+.eqbody { display: inline-flex; align-items: center; gap: .3em; vertical-align: middle; }
+.eqbody.frac { flex-direction: column; gap: 0; font-size: .82em; line-height: 1; }
+.eqbody.frac .op { display: none; }
+.eqbody.frac .xvar { align-self: stretch; text-align: center; border-top: .09em solid var(--ink); margin-top: .12em; padding-top: .06em; }
+.eq:has(.frac) { padding-top: 8px; padding-bottom: 8px; }
+/* 文の中の小さな分数 */
+.ifrac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; font-size: .85em; line-height: 1.05; margin: 0 .1em; }
+.ifrac > span + span { border-top: 2px solid currentColor; align-self: stretch; text-align: center; }

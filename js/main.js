@@ -84,7 +84,8 @@
     random = isRandom;
     list = random ? randomStages(kind) : course().stages;
     runStars = list.map(() => 0);
-    $('op').textContent = course().op;
+    // 反比例は分数の形（x ぶんの □）で見せる
+    $('eqBody').classList.toggle('frac', kind === 'inv');
     startStage(from);
   }
 
@@ -201,7 +202,7 @@
     $('rCalc').innerHTML =
       `<p>カップは <b>(${st.x}, ${st.y})</b></p>` +
       `<p class="calc">${calc}</p>` +
-      `<p>y ＝ ${ans} ${course().op} x</p>`;
+      (kind === 'prop' ? `<p>y ＝ ${ans} × x</p>` : `<p>y ＝ <span class="ifrac"><span>${ans}</span><span>x</span></span></p>`);
     $('rBest').textContent = before > stars ? `これまでの いちばん：${starText(before)}` : '';
     $('btnNext').textContent = idx + 1 < HOLES ? 'つぎへ' : 'けっかを 見る';
     $('pad').hidden = true;
