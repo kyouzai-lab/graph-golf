@@ -1,0 +1,290 @@
+/* グラフ・ゴルフ — A「パターゴルフ場」 */
+:root {
+  --felt: #1f5a3a;
+  --felt-dark: #174a2f;
+  --turf: #6fb552;
+  --turf2: #67ac4a;
+  --wood: #a8703f;
+  --wood2: #7d4f28;
+  --ink: #1d2a1f;
+  --cream: #fff8e6;
+  --cream-shadow: #b9a77a;
+  --flag: #e2403a;
+  --flag-shadow: #9d2420;
+  --yellow: #ffe14d;
+  --star: #ffd84a;
+  --hole: #173d22;
+  --font: "Hiragino Maru Gothic ProN", "Hiragino Sans", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--felt) repeating-linear-gradient(45deg, #ffffff06 0 2px, transparent 2px 6px);
+  color: var(--cream);
+  font-family: var(--font);
+  font-size: 20px;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+#app { height: 100vh; height: 100dvh; }
+.screen { height: 100%; }
+.screen[hidden], [hidden] { display: none !important; }
+
+button {
+  font: inherit;
+  color: var(--ink);
+  border: none;
+  cursor: pointer;
+  min-height: 56px;
+  min-width: 56px;
+  border-radius: 18px;
+  background: var(--cream);
+  box-shadow: 0 6px 0 var(--cream-shadow);
+  font-weight: 800;
+  transition: transform .06s;
+}
+button:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--cream-shadow); }
+
+/* ---------- タイトル・おわり ---------- */
+.title, .final {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+.title-card {
+  width: min(560px, 100%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.title-art { width: min(300px, 70vw); filter: drop-shadow(0 6px 0 #0004); }
+.t-turf { fill: var(--turf); stroke: var(--wood2); stroke-width: 6; }
+.t-grid line { stroke: #ffffffa0; stroke-width: 2; }
+.t-shot { stroke: var(--yellow); stroke-width: 5; stroke-linecap: round; }
+.t-cup { fill: var(--hole); stroke: #fff; stroke-width: 2.5; }
+.t-pole { stroke: #fff; stroke-width: 3; }
+.t-flag { fill: var(--flag); }
+.t-ball { fill: #fff; }
+h1 { font-size: clamp(44px, 9vw, 64px); letter-spacing: .04em; text-shadow: 0 5px 0 var(--felt-dark); }
+h2 { font-size: clamp(36px, 7vw, 48px); }
+.sub { font-size: 24px; font-weight: 700; }
+.title-buttons { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; width: 100%; margin-top: 8px; }
+.big { min-width: 220px; min-height: 84px; padding: 10px 26px; font-size: 30px; }
+.big small { display: block; font-size: 18px; font-weight: 700; opacity: .75; }
+.cont { background: var(--flag); color: #fff; box-shadow: 0 6px 0 var(--flag-shadow); }
+.cont:active { box-shadow: 0 2px 0 var(--flag-shadow); }
+.record { font-size: 22px; font-weight: 700; color: var(--star); min-height: 1.4em; }
+.small {
+  font-size: 20px; padding: 8px 22px;
+  background: transparent; color: var(--cream);
+  border: 3px solid #fff8e680; box-shadow: none;
+}
+.small:active { box-shadow: none; }
+
+.f-label { font-size: 24px; font-weight: 700; }
+.f-total { font-size: 80px; font-weight: 800; color: var(--star); line-height: 1; text-shadow: 0 5px 0 var(--felt-dark); }
+.f-total small { font-size: 36px; color: var(--cream); }
+.f-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 20px;
+  width: 100%;
+  background: #00000026;
+  border-radius: 18px;
+  padding: 14px 18px;
+}
+.f-list li { display: flex; justify-content: space-between; font-size: 21px; font-weight: 700; }
+.f-list .s { color: var(--star); letter-spacing: 2px; }
+
+/* ---------- プレイ（横向き：左にコース、右に入力） ---------- */
+.play {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(340px, 38vw, 460px);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 18px;
+  padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+}
+.course {
+  min-width: 0;
+  min-height: 0;
+  background: var(--wood);
+  border: 8px solid var(--wood2);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 0 #0004;
+}
+/* 枠いっぱいに置く（SVG の大きさが枠の大きさを押し広げないように） */
+#graph { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); display: block; }
+
+.panel {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "top top"
+    "tries tries"
+    "eq eq"
+    "hint hint"
+    "pad pad";
+  grid-template-rows: auto auto auto auto 1fr;
+  gap: 12px;
+}
+.top { grid-area: top; display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 700; }
+.back { font-size: 18px; padding: 0 12px; background: transparent; color: var(--cream); border: 3px solid #fff8e680; box-shadow: none; }
+.back:active { box-shadow: none; }
+.hole { background: var(--cream); color: var(--ink); border-radius: 999px; padding: 6px 16px; white-space: nowrap; }
+.stars { margin-left: auto; color: var(--star); font-size: 28px; white-space: nowrap; }
+.tries { grid-area: tries; display: flex; align-items: center; justify-content: space-between; font-size: 22px; font-weight: 700; }
+.balls span {
+  display: inline-block; width: 28px; height: 28px; border-radius: 50%;
+  background: #fff; margin-left: 8px; box-shadow: inset -3px -3px 0 #ccc;
+  vertical-align: middle;
+}
+.balls span.used { background: transparent; border: 3px dashed #fff8; box-shadow: none; }
+
+.eq {
+  grid-area: eq;
+  background: var(--cream); color: var(--ink);
+  border-radius: 22px; padding: 12px 10px;
+  font-size: clamp(36px, 6vh, 52px); font-weight: 800; text-align: center; white-space: nowrap;
+  box-shadow: 0 6px 0 #0004;
+}
+.box {
+  display: inline-block; min-width: 3.2em; padding: 0 10px;
+  border: 5px solid var(--flag); border-radius: 16px; color: var(--flag);
+  font-variant-numeric: tabular-nums;
+}
+.box.empty { background: #e2403a14; }
+.hint { grid-area: hint; font-size: 20px; font-weight: 700; text-align: center; min-height: 2.6em; line-height: 1.3; display: flex; align-items: center; justify-content: center; }
+.hint.warn { color: var(--yellow); animation: shake .4s; }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
+.pad {
+  grid-area: pad;
+  align-self: end;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-areas:
+    "k7 k8 k9 kb"
+    "k4 k5 k6 kd"
+    "k1 k2 k3 k0"
+    "go go go go";
+  gap: 12px;
+}
+.pad button { height: clamp(56px, 10vh, 84px); font-size: 36px; }
+.pad .del { font-size: 24px; }
+.go { background: var(--flag); color: #fff; box-shadow: 0 6px 0 var(--flag-shadow); font-size: 32px; }
+.go:active { box-shadow: 0 2px 0 var(--flag-shadow); }
+.pad .go { font-size: 32px; }
+.panel.rolling .pad button { opacity: .5; }
+
+/* 面が終わったとき（入力のかわりに出す） */
+.result {
+  grid-area: pad;
+  align-self: stretch;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px;
+  background: #00000026; border-radius: 22px; padding: 14px;
+  text-align: center;
+}
+.panel.done { grid-template-rows: auto auto auto 0 1fr; }
+.r-title { font-size: 34px; font-weight: 800; }
+.r-stars { font-size: clamp(56px, 10vh, 80px); line-height: 1; letter-spacing: 6px; color: #ffffff40; }
+.r-stars .on { color: var(--star); display: inline-block; animation: pop .45s backwards; text-shadow: 0 4px 0 #b98d00; }
+@keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.3); } 100% { transform: scale(1); } }
+.r-calc { font-size: 22px; font-weight: 700; line-height: 1.5; }
+.r-calc .calc { font-size: 30px; color: var(--yellow); }
+.r-best { font-size: 18px; opacity: .85; min-height: 1em; }
+.next { min-width: 220px; min-height: 72px; margin-top: 6px; }
+
+/* ---------- 縦向き：上にコース、下に入力 ---------- */
+@media (orientation: portrait) {
+  .play { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: 14px; }
+  .panel {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "top top"
+      "eq tries"
+      "hint hint"
+      "pad pad";
+    grid-template-rows: auto auto auto auto;
+    gap: 10px;
+  }
+  .panel.done { grid-template-rows: auto auto 0 auto; }
+  .tries { flex-direction: column; gap: 6px; justify-content: center; }
+  .eq { font-size: clamp(34px, 4.6vh, 48px); }
+  .hint { min-height: 2em; }
+  .pad {
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-areas:
+      "k1 k2 k3 k4 k5 kd"
+      "k6 k7 k8 k9 k0 kb"
+      "go go go go go go";
+    gap: 10px;
+  }
+  .pad button { height: clamp(56px, 6.2vh, 72px); font-size: 32px; }
+  .result { gap: 4px; padding: 10px; }
+  .r-stars { font-size: clamp(52px, 6vh, 72px); }
+}
+
+/* ---------- 確認 ---------- */
+.dialog {
+  position: fixed; inset: 0; background: #0009;
+  display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10;
+}
+.dialog-card {
+  background: var(--cream); color: var(--ink);
+  border-radius: 24px; padding: 28px 24px; width: min(480px, 100%);
+  text-align: center; display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 8px 0 #0005;
+}
+.dlg-title { font-size: 30px; font-weight: 800; }
+.dlg-body { font-size: 20px; }
+.dlg-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.dlg-buttons .big { min-width: 160px; background: #fff; box-shadow: 0 6px 0 #cbbf9f; }
+.dlg-buttons .danger { background: var(--flag); color: #fff; box-shadow: 0 6px 0 var(--flag-shadow); }
+
+/* ---------- コース（SVG） ---------- */
+.turf.a { fill: var(--turf); }
+.turf.b { fill: var(--turf2); }
+.grid { stroke: #ffffff70; stroke-width: 1.5; }
+.grid5 { stroke: #fffffff0; stroke-width: 2.5; }
+.axis { stroke: #fff; stroke-width: 5; stroke-linecap: round; }
+.ticks text {
+  fill: #fff; font-size: 20px; font-weight: 800; font-family: var(--font);
+  paint-order: stroke; stroke: var(--wood2); stroke-width: 4px; stroke-linejoin: round;
+}
+.miss { stroke: #fff; stroke-opacity: .5; stroke-width: 5; stroke-dasharray: 2 10; stroke-linecap: round; }
+.misslabel {
+  fill: #fff; fill-opacity: .85; font-size: 22px; font-weight: 800; font-family: var(--font);
+  paint-order: stroke; stroke: #2f6b2a; stroke-width: 4px;
+}
+.answer { stroke: var(--cream); stroke-width: 4; stroke-dasharray: 12 8; stroke-linecap: round; opacity: .9; }
+.guide { stroke: var(--yellow); stroke-width: 3; stroke-dasharray: 6 6; }
+.guidemark { fill: none; stroke: var(--yellow); stroke-width: 4; }
+.guidetext {
+  fill: var(--yellow); font-size: 20px; font-weight: 800; font-family: var(--font);
+  paint-order: stroke; stroke: var(--wood2); stroke-width: 4px;
+}
+.shot { stroke: var(--yellow); stroke-width: 6; stroke-linecap: round; }
+.cup { fill: var(--hole); stroke: #fff; stroke-width: 3; }
+.cup.cupin { animation: cupin .8s ease-out 2; }
+@keyframes cupin { 0% { stroke: var(--yellow); stroke-width: 10; } 100% { stroke: #fff; stroke-width: 3; } }
+.cupdot { fill: #fff; opacity: .8; }
+.pole { stroke: #fff; stroke-width: 4; stroke-linecap: round; }
+.flag { fill: var(--flag); transform-box: fill-box; transform-origin: left center; }
+.flag.wave { animation: wave .5s ease-in-out 4 alternate; }
+@keyframes wave { from { transform: scaleX(1); } to { transform: scaleX(.7) skewY(6deg); } }
+.ball { fill: #fff; stroke: #bbb; stroke-width: 2; filter: drop-shadow(2px 3px 0 #0005); }
+.ball.stopped { opacity: .6; }

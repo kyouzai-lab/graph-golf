@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1f5a3a">
+  <title>グラフ・ゴルフ</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236fb552'/%3E%3Cline x1='30' y1='44' x2='30' y2='10' stroke='%23fff' stroke-width='4'/%3E%3Cpath d='M30 10l22 7-22 7z' fill='%23e2403a'/%3E%3Cellipse cx='30' cy='46' rx='12' ry='6' fill='%23173d22'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="app">
+
+    <!-- タイトル -->
+    <section id="title" class="screen title">
+      <div class="title-card">
+        <svg class="title-art" viewBox="0 0 240 150" aria-hidden="true">
+          <rect x="4" y="4" width="232" height="142" rx="16" class="t-turf"/>
+          <g class="t-grid">
+            <line x1="20" y1="20" x2="20" y2="130"/><line x1="60" y1="20" x2="60" y2="130"/><line x1="100" y1="20" x2="100" y2="130"/>
+            <line x1="140" y1="20" x2="140" y2="130"/><line x1="180" y1="20" x2="180" y2="130"/><line x1="220" y1="20" x2="220" y2="130"/>
+            <line x1="20" y1="130" x2="220" y2="130"/><line x1="20" y1="94" x2="220" y2="94"/><line x1="20" y1="58" x2="220" y2="58"/><line x1="20" y1="22" x2="220" y2="22"/>
+          </g>
+          <line x1="20" y1="130" x2="140" y2="58" class="t-shot"/>
+          <ellipse cx="140" cy="58" rx="13" ry="7" class="t-cup"/>
+          <line x1="140" y1="54" x2="140" y2="16" class="t-pole"/>
+          <path d="M140 16l28 8-28 8z" class="t-flag"/>
+          <circle cx="92" cy="87" r="8" class="t-ball"/>
+        </svg>
+        <h1>グラフ・ゴルフ</h1>
+        <p class="sub">y ＝ □ × x で カップを ねらえ！</p>
+        <div class="title-buttons">
+          <button id="btnNew" class="big">はじめから</button>
+          <button id="btnCont" class="big cont">つづきから<small id="contNote"></small></button>
+        </div>
+        <p class="record" id="recordLine"></p>
+        <button id="btnErase" class="small">きろくを けす</button>
+      </div>
+    </section>
+
+    <!-- プレイ -->
+    <section id="play" class="screen play" hidden>
+      <div class="course"><svg id="graph" aria-label="グラフ"></svg></div>
+      <div class="panel" id="panel">
+        <div class="top">
+          <button id="btnBack" class="back" aria-label="タイトルへもどる">もどる</button>
+          <span class="hole" id="holeNo"></span>
+          <span class="stars" id="totalStars"></span>
+        </div>
+        <div class="tries"><span>のこり</span><span class="balls" id="balls"></span></div>
+        <div class="eq">y ＝ <span class="box" id="box"></span> × x</div>
+        <p class="hint" id="hint"></p>
+        <div class="pad" id="pad">
+          <button data-k="1" style="grid-area:k1">1</button>
+          <button data-k="2" style="grid-area:k2">2</button>
+          <button data-k="3" style="grid-area:k3">3</button>
+          <button data-k="4" style="grid-area:k4">4</button>
+          <button data-k="5" style="grid-area:k5">5</button>
+          <button data-k="6" style="grid-area:k6">6</button>
+          <button data-k="7" style="grid-area:k7">7</button>
+          <button data-k="8" style="grid-area:k8">8</button>
+          <button data-k="9" style="grid-area:k9">9</button>
+          <button data-k="0" style="grid-area:k0">0</button>
+          <button data-k="." style="grid-area:kd" aria-label="小数点">.</button>
+          <button data-k="del" style="grid-area:kb" class="del">けす</button>
+          <button data-k="go" style="grid-area:go" class="go">うつ！</button>
+        </div>
+        <div class="result" id="result" hidden>
+          <p class="r-title" id="rTitle"></p>
+          <p class="r-stars" id="rStars"></p>
+          <div class="r-calc" id="rCalc"></div>
+          <p class="r-best" id="rBest"></p>
+          <button id="btnNext" class="go next">つぎへ</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10面のあと -->
+    <section id="final" class="screen final" hidden>
+      <div class="title-card">
+        <h2>10ホール おわり！</h2>
+        <p class="f-label">★の ごうけい</p>
+        <p class="f-total" id="fTotal"></p>
+        <ol class="f-list" id="fList"></ol>
+        <div class="title-buttons">
+          <button id="btnFinalTitle" class="big">タイトルへ</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 確認 -->
+    <div id="dialog" class="dialog" hidden>
+      <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+        <p id="dlgTitle" class="dlg-title">きろくを けしますか？</p>
+        <p class="dlg-body">すすんだ ホールと ★が ぜんぶ きえます。</p>
+        <div class="dlg-buttons">
+          <button id="dlgNo" class="big">やめる</button>
+          <button id="dlgYes" class="big danger">けす</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  <script src="js/stages.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/graph.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
