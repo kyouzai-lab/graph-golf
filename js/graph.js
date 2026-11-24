@@ -72,9 +72,10 @@ const Graph = (() => {
       const xe = edgeX(k);
       el('line', { x1: X(0), y1: Y(0), x2: X(xe), y2: Y(k * xe), class: 'miss' }, missG);
       const atTop = xe < RANGE.xMax;
+      const corner = !atTop && k * xe > RANGE.yMax - 1;   // 右上のかどに近いときは、線の下側に書く
       el('text', {
-        x: X(xe) + (atTop ? 6 : -4),
-        y: Y(k * xe) + (atTop ? 20 : -10),
+        x: X(xe) + (atTop ? 6 : corner ? -14 : -4),
+        y: Y(k * xe) + (atTop ? 20 : corner ? 30 : -10),
         'text-anchor': atTop ? 'start' : 'end',
         class: 'misslabel',
       }, missG).textContent = k;

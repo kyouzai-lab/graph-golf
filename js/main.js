@@ -114,7 +114,7 @@
       if (used >= TRIES) return finish(0);
       input = '';
       updateBox();
-      setHint(`はずれ！ うすい線を ヒントに もう一回（のこり ${TRIES - used}回）`);
+      setHint('はずれ！ うすい線を ヒントに もう一回');
     });
   }
 
