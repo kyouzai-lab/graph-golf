@@ -14,8 +14,29 @@
 
   function show(name) {
     for (const k in screens) screens[k].hidden = k !== name;
-    if (name === 'play') Graph.render();
+    if (name === 'play') { fitCourse(); Graph.render(); }
   }
+
+  // コースの枠を、正方形の方眼（x 10目もり × y 20目もり）がいちばん大きく入る大きさにする。
+  // 入力の側には最低 PANEL_MIN px を残す。
+  const FRAME = 28;   // 木の枠（8px×2）＋内側のすき間（6px×2）
+  function fitCourse() {
+    const play = screens.play;
+    if (play.hidden) return;
+    const cs = getComputedStyle(play);
+    const W = play.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const H = play.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    const gap = parseFloat(cs.columnGap) || 0;
+    const panelMin = W < 900 ? 300 : 360;
+    const size = Graph.fit(W - gap - panelMin - FRAME, H - FRAME);
+    const course = play.querySelector('.course');
+    course.style.width = `${Math.floor(size.w + FRAME)}px`;
+    course.style.height = `${Math.floor(size.h + FRAME)}px`;
+  }
+  // 画面の大きさ・向きが変わったら合わせ直す（resize が来ない場合もあるので見張る）
+  new ResizeObserver(fitCourse).observe(screens.play);
+  window.addEventListener('resize', fitCourse);
+  window.addEventListener('orientationchange', () => setTimeout(fitCourse, 300));
 
   // ---------- タイトル ----------
   function showTitle() {

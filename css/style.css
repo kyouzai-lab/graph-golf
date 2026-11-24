@@ -109,8 +109,11 @@ h2 { font-size: clamp(36px, 7vw, 48px); }
 /* ---------- プレイ（横向き：左にコース、右に入力） ---------- */
 .play {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(340px, 38vw, 460px);
+  /* コースの幅は JS（fitCourse）で正方形の方眼に合わせる。のこりを入力の側に使う */
+  grid-template-columns: auto minmax(0, 480px);
   grid-template-rows: minmax(0, 1fr);
+  justify-content: center;
+  align-items: center;
   gap: 18px;
   padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
 }
@@ -129,6 +132,11 @@ h2 { font-size: clamp(36px, 7vw, 48px); }
 
 .panel {
   min-height: 0;
+  height: 100%;
+  width: 100%;
+  max-width: 480px;
+  justify-self: center;
+  container-type: inline-size;
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-areas:
@@ -140,7 +148,7 @@ h2 { font-size: clamp(36px, 7vw, 48px); }
   grid-template-rows: auto auto auto auto 1fr;
   gap: 12px;
 }
-.top { grid-area: top; display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 700; }
+.top { grid-area: top; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 22px; font-weight: 700; }
 .back { font-size: 18px; padding: 0 12px; background: transparent; color: var(--cream); border: 3px solid #fff8e680; box-shadow: none; }
 .back:active { box-shadow: none; }
 .hole { background: var(--cream); color: var(--ink); border-radius: 999px; padding: 6px 16px; white-space: nowrap; }
@@ -157,11 +165,11 @@ h2 { font-size: clamp(36px, 7vw, 48px); }
   grid-area: eq;
   background: var(--cream); color: var(--ink);
   border-radius: 22px; padding: 12px 10px;
-  font-size: clamp(36px, 6vh, 52px); font-weight: 800; text-align: center; white-space: nowrap;
+  font-size: clamp(28px, 10.5cqi, 52px); font-weight: 800; text-align: center; white-space: nowrap;
   box-shadow: 0 6px 0 #0004;
 }
 .box {
-  display: inline-block; min-width: 3.2em; padding: 0 10px;
+  display: inline-block; min-width: 2.8em; padding: 0 10px;
   border: 5px solid var(--flag); border-radius: 16px; color: var(--flag);
   font-variant-numeric: tabular-nums;
 }
@@ -208,34 +216,14 @@ h2 { font-size: clamp(36px, 7vw, 48px); }
 .r-best { font-size: 18px; opacity: .85; min-height: 1em; }
 .next { min-width: 220px; min-height: 72px; margin-top: 6px; }
 
-/* ---------- 縦向き：上にコース、下に入力 ---------- */
+/* ---------- 縦向き：方眼が正方形なのでコースは縦長。入力は右にせまく並べる ---------- */
 @media (orientation: portrait) {
-  .play { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: 14px; }
-  .panel {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "top top"
-      "eq tries"
-      "hint hint"
-      "pad pad";
-    grid-template-rows: auto auto auto auto;
-    gap: 10px;
-  }
-  .panel.done { grid-template-rows: auto auto 0 auto; }
-  .tries { flex-direction: column; gap: 6px; justify-content: center; }
-  .eq { font-size: clamp(34px, 4.6vh, 48px); }
-  .hint { min-height: 2em; }
-  .pad {
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-areas:
-      "k1 k2 k3 k4 k5 kd"
-      "k6 k7 k8 k9 k0 kb"
-      "go go go go go go";
-    gap: 10px;
-  }
-  .pad button { height: clamp(56px, 6.2vh, 72px); font-size: 32px; }
-  .result { gap: 4px; padding: 10px; }
-  .r-stars { font-size: clamp(52px, 6vh, 72px); }
+  .play { gap: 14px; }
+  .pad { gap: 10px; }
+  .pad button { height: clamp(56px, 7vh, 84px); font-size: 32px; }
+  .stars { font-size: 24px; }
+  .hint { min-height: 3.9em; }
+  .result { padding: 10px; }
 }
 
 /* ---------- 確認 ---------- */

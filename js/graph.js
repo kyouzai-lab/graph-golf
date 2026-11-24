@@ -23,14 +23,19 @@ const Graph = (() => {
   function measure() {
     const r = svg.getBoundingClientRect();
     const W = Math.max(200, r.width), H = Math.max(200, r.height);
-    const pw = W - M.L - M.R, ph = H - M.T - M.B;
-    const sx = pw / RANGE.xMax, sy = ph / RANGE.yMax;
+    // x と y の1目もりは同じ長さ（正方形の方眼）。入りきらない向きは真ん中に寄せる
+    const u = Math.max(4, Math.min((W - M.L - M.R) / RANGE.xMax, (H - M.T - M.B) / RANGE.yMax));
+    const pw = u * RANGE.xMax, ph = u * RANGE.yMax;
+    const ox = M.L + (W - M.L - M.R - pw) / 2, oy = M.T + (H - M.T - M.B - ph) / 2;
     geo = {
-      W, H, pw, ph, sx, sy,
-      X: x => M.L + x * sx,
-      Y: y => M.T + ph - y * sy,
+      W, H, pw, ph, sx: u, sy: u,
+      X: x => ox + x * u,
+      Y: y => oy + ph - y * u,
     };
   }
+
+  // 1目もり u px のときに SVG が必要とする大きさ
+  const sizeFor = u => ({ w: u * RANGE.xMax + M.L + M.R, h: u * RANGE.yMax + M.T + M.B });
 
   // 原点から y＝k×x の線がコースの端に出るところの x
   const edgeX = k => Math.min(RANGE.xMax, RANGE.yMax / k);
@@ -190,6 +195,11 @@ const Graph = (() => {
       render();
     },
     shoot,
+    // 使える広さ（SVG に使える幅・高さ）から、正方形の方眼がいちばん大きく入る SVG の大きさを返す
+    fit(availW, availH) {
+      const u = Math.max(4, Math.min((availW - M.L - M.R) / RANGE.xMax, (availH - M.T - M.B) / RANGE.yMax));
+      return sizeFor(u);
+    },
     end(showLine) { ended = { showLine }; render(); },
     render,
   };
