@@ -276,3 +276,34 @@ h2 { font-size: clamp(36px, 7vw, 48px); }
 @keyframes wave { from { transform: scaleX(1); } to { transform: scaleX(.7) skewY(6deg); } }
 .ball { fill: #fff; stroke: #bbb; stroke-width: 2; filter: drop-shadow(2px 3px 0 #0005); }
 .ball.stopped { opacity: .6; }
+
+/* ---------- 比例・反比例・ランダム ---------- */
+.kinds { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.kind {
+  min-width: 200px; min-height: 84px; padding: 8px 22px; font-size: 30px;
+  background: transparent; color: var(--cream);
+  border: 4px solid #fff8e680; box-shadow: none;
+}
+.kind small { display: block; font-size: 20px; font-weight: 700; opacity: .85; }
+.kind:active { box-shadow: none; }
+.kind.on { background: var(--cream); color: var(--ink); border-color: var(--star); box-shadow: 0 6px 0 var(--cream-shadow); }
+.rnd { background: var(--star); box-shadow: 0 6px 0 #b98d00; }
+.rnd:active { box-shadow: 0 2px 0 #b98d00; }
+.t-inv { display: none; }
+body[data-kind="inv"] .t-inv { display: inline; }
+body[data-kind="inv"] .t-prop { display: none; }
+.t-shot.t-inv { fill: none; }
+.f-date { font-size: 22px; font-weight: 700; opacity: .9; }
+.f-best { font-size: 22px; font-weight: 700; color: var(--star); min-height: 1.2em; }
+
+/* 線は path で描くので、ぬりつぶさない */
+.shot, .miss, .answer { fill: none; stroke-linejoin: round; }
+
+/* 2打目を外したあとの手がかり */
+.hint.tip { color: var(--yellow); }
+.hintband { fill: var(--yellow); animation: glow 1.1s ease-in-out infinite alternate; }
+.hintline { stroke: var(--yellow); stroke-width: 4; }
+.hintrect { fill: var(--yellow); fill-opacity: .6; stroke: var(--yellow); stroke-width: 4; animation: glow2 1.1s ease-in-out infinite alternate; }
+@keyframes glow2 { from { opacity: .55; } to { opacity: 1; } }
+.ticks text.hot { fill: var(--yellow); }
+@keyframes glow { from { opacity: .35; } to { opacity: .8; } }

@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#1f5a3a">
   <title>グラフ・ゴルフ</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236fb552'/%3E%3Cline x1='30' y1='44' x2='30' y2='10' stroke='%23fff' stroke-width='4'/%3E%3Cpath d='M30 10l22 7-22 7z' fill='%23e2403a'/%3E%3Cellipse cx='30' cy='46' rx='12' ry='6' fill='%23173d22'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
   <main id="app">
@@ -22,17 +22,23 @@
             <line x1="140" y1="20" x2="140" y2="130"/><line x1="180" y1="20" x2="180" y2="130"/><line x1="220" y1="20" x2="220" y2="130"/>
             <line x1="20" y1="130" x2="220" y2="130"/><line x1="20" y1="94" x2="220" y2="94"/><line x1="20" y1="58" x2="220" y2="58"/><line x1="20" y1="22" x2="220" y2="22"/>
           </g>
-          <line x1="20" y1="130" x2="140" y2="58" class="t-shot"/>
+          <line x1="20" y1="130" x2="140" y2="58" class="t-shot t-prop"/>
+          <path d="M30 22 C40 52 80 60 140 58" class="t-shot t-inv"/>
           <ellipse cx="140" cy="58" rx="13" ry="7" class="t-cup"/>
           <line x1="140" y1="54" x2="140" y2="16" class="t-pole"/>
           <path d="M140 16l28 8-28 8z" class="t-flag"/>
-          <circle cx="92" cy="87" r="8" class="t-ball"/>
+          <circle cx="92" cy="87" r="8" class="t-ball t-prop"/>
         </svg>
         <h1>グラフ・ゴルフ</h1>
-        <p class="sub">y ＝ □ × x で カップを ねらえ！</p>
+        <p class="sub">□ を 決めて カップを ねらえ！</p>
+        <div class="kinds">
+          <button class="kind on" data-kind="prop" aria-pressed="true">比例<small>y ＝ □ × x</small></button>
+          <button class="kind" data-kind="inv" aria-pressed="false">反比例<small>y ＝ □ ÷ x</small></button>
+        </div>
         <div class="title-buttons">
           <button id="btnNew" class="big">はじめから</button>
           <button id="btnCont" class="big cont">つづきから<small id="contNote"></small></button>
+          <button id="btnRandom" class="big rnd">ランダムコース<small id="rndNote"></small></button>
         </div>
         <p class="record" id="recordLine"></p>
         <button id="btnErase" class="small">きろくを けす</button>
@@ -49,7 +55,7 @@
           <span class="stars" id="totalStars"></span>
         </div>
         <div class="tries"><span>のこり</span><span class="balls" id="balls"></span></div>
-        <div class="eq">y ＝ <span class="box" id="box"></span> × x</div>
+        <div class="eq">y ＝ <span class="box" id="box"></span> <span id="op">×</span> x</div>
         <p class="hint" id="hint"></p>
         <div class="pad" id="pad">
           <button data-k="1" style="grid-area:k1">1</button>
@@ -79,11 +85,14 @@
     <!-- 10面のあと -->
     <section id="final" class="screen final" hidden>
       <div class="title-card">
-        <h2>10ホール おわり！</h2>
+        <h2 id="fTitle"></h2>
+        <p class="f-date" id="fDate"></p>
         <p class="f-label">★の ごうけい</p>
         <p class="f-total" id="fTotal"></p>
+        <p class="f-best" id="fBest"></p>
         <ol class="f-list" id="fList"></ol>
         <div class="title-buttons">
+          <button id="btnAgain" class="big cont" hidden>もう一回</button>
           <button id="btnFinalTitle" class="big">タイトルへ</button>
         </div>
       </div>
@@ -93,7 +102,7 @@
     <div id="dialog" class="dialog" hidden>
       <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
         <p id="dlgTitle" class="dlg-title">きろくを けしますか？</p>
-        <p class="dlg-body">すすんだ ホールと ★が ぜんぶ きえます。</p>
+        <p class="dlg-body">比例・反比例・ランダムの すすんだ ホールと ★が ぜんぶ きえます。</p>
         <div class="dlg-buttons">
           <button id="dlgNo" class="big">やめる</button>
           <button id="dlgYes" class="big danger">けす</button>
@@ -102,9 +111,9 @@
     </div>
 
   </main>
-  <script src="js/stages.js?v=5"></script>
-  <script src="js/store.js?v=5"></script>
-  <script src="js/graph.js?v=5"></script>
-  <script src="js/main.js?v=5"></script>
+  <script src="js/stages.js?v=9"></script>
+  <script src="js/store.js?v=9"></script>
+  <script src="js/graph.js?v=9"></script>
+  <script src="js/main.js?v=9"></script>
 </body>
 </html>

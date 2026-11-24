@@ -3,6 +3,10 @@
   const $ = id => document.getElementById(id);
   const screens = { title: $('title'), play: $('play'), final: $('final') };
 
+  let kind = 'prop';  // 'prop' 比例 / 'inv' 反比例
+  let random = false; // ランダムコースか
+  let list = [];      // このコースのホール
+  let runStars = [];  // ランダムコースで、この回にとった★
   let idx = 0;        // いまの面（0から）
   let used = 0;       // 打った回数
   let input = '';     // □ に入れている数（文字のまま）
@@ -11,6 +15,7 @@
 
   const fmt = n => String(Math.round(n * 1000) / 1000);
   const starText = n => '★'.repeat(n) + '☆'.repeat(3 - n);
+  const course = () => COURSES[kind];
 
   function show(name) {
     for (const k in screens) screens[k].hidden = k !== name;
@@ -18,7 +23,7 @@
   }
 
   // コースの枠を、正方形の方眼（x 10目もり × y 20目もり）がいちばん大きく入る大きさにする。
-  // 入力の側には最低 PANEL_MIN px を残す。
+  // 入力の側には最低 panelMin px を残す。
   const FRAME = 28;   // 木の枠（8px×2）＋内側のすき間（6px×2）
   function fitCourse() {
     const play = screens.play;
@@ -29,9 +34,9 @@
     const gap = parseFloat(cs.columnGap) || 0;
     const panelMin = W < 900 ? 300 : 360;
     const size = Graph.fit(W - gap - panelMin - FRAME, H - FRAME);
-    const course = play.querySelector('.course');
-    course.style.width = `${Math.floor(size.w + FRAME)}px`;
-    course.style.height = `${Math.floor(size.h + FRAME)}px`;
+    const c = play.querySelector('.course');
+    c.style.width = `${Math.floor(size.w + FRAME)}px`;
+    c.style.height = `${Math.floor(size.h + FRAME)}px`;
   }
   // 画面の大きさ・向きが変わったら合わせ直す（resize が来ない場合もあるので見張る）
   new ResizeObserver(fitCourse).observe(screens.play);
@@ -40,18 +45,31 @@
 
   // ---------- タイトル ----------
   function showTitle() {
-    const r = Store.reached;
-    $('contNote').textContent = r >= STAGES.length ? '★の ごうけいを 見る' : `ホール ${r + 1} から`;
-    const t = Store.total();
-    $('recordLine').textContent = t > 0 ? `いちばん よい ★の ごうけい　${t} / ${STAGES.length * 3}` : '';
+    document.querySelectorAll('.kind').forEach(b => {
+      const on = b.dataset.kind === kind;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on);
+    });
+    document.body.dataset.kind = kind;
+    const r = Store.reached(kind);
+    $('contNote').textContent = r >= HOLES ? '★の ごうけいを 見る' : `ホール ${r + 1} から`;
+    const best = Store.randomBest(kind);
+    $('rndNote').textContent = best > 0 ? `いちばん ★${best}` : '毎回 ちがう ホール';
+    const t = Store.total(kind);
+    $('recordLine').textContent = t > 0 ? `${course().name}コース　いちばん よい ★の ごうけい ${t} / ${HOLES * 3}` : '';
     show('title');
   }
 
-  $('btnNew').addEventListener('click', () => { Store.restart(); startStage(0); });
+  document.querySelectorAll('.kind').forEach(b => b.addEventListener('click', () => {
+    kind = b.dataset.kind;
+    showTitle();
+  }));
+  $('btnNew').addEventListener('click', () => { Store.restart(kind); startCourse(false, 0); });
   $('btnCont').addEventListener('click', () => {
-    if (Store.reached >= STAGES.length) showFinal();
-    else startStage(Store.reached);
+    if (Store.reached(kind) >= HOLES) { random = false; list = course().stages; showFinal(); }
+    else startCourse(false, Store.reached(kind));
   });
+  $('btnRandom').addEventListener('click', () => startCourse(true, 0));
 
   // きろくをけす（確認してから）
   $('btnErase').addEventListener('click', () => { $('dialog').hidden = false; });
@@ -62,10 +80,18 @@
     showTitle();
   });
 
+  function startCourse(isRandom, from) {
+    random = isRandom;
+    list = random ? randomStages(kind) : course().stages;
+    runStars = list.map(() => 0);
+    $('op').textContent = course().op;
+    startStage(from);
+  }
+
   // ---------- 1面 ----------
   function startStage(i) {
     idx = i; used = 0; input = ''; busy = false; over = false;
-    $('holeNo').textContent = `ホール ${i + 1} / ${STAGES.length}`;
+    $('holeNo').textContent = `${random ? 'ランダム' : 'ホール'} ${i + 1} / ${HOLES}`;
     $('pad').hidden = false;
     $('hint').hidden = false;
     $('result').hidden = true;
@@ -74,11 +100,15 @@
     updateTop();
     updateBox();
     show('play');
-    Graph.setStage(STAGES[i]);
+    Graph.setStage({ ...list[i], kind });
+  }
+
+  function headerStars() {
+    return random ? runStars.reduce((a, b) => a + b, 0) : Store.total(kind);
   }
 
   function updateTop() {
-    $('totalStars').textContent = `★ ${Store.total()}`;
+    $('totalStars').textContent = `★ ${headerStars()}`;
     const balls = $('balls');
     balls.textContent = '';
     for (let n = 0; n < TRIES; n++) {
@@ -94,11 +124,11 @@
     b.classList.toggle('empty', !input);
   }
 
-  function setHint(text, warn) {
+  function setHint(text, cls) {
     const h = $('hint');
     h.textContent = text;
-    h.classList.remove('warn');
-    if (warn) { void h.offsetWidth; h.classList.add('warn'); }
+    h.classList.remove('warn', 'tip');
+    if (cls) { void h.offsetWidth; h.classList.add(cls); }
   }
 
   function press(k) {
@@ -118,11 +148,11 @@
   function submit() {
     const v = parseFloat(input);
     if (!(v > 0)) {                 // 空・0 のときは回数を減らさない
-      setHint('数を 入れてね', true);
+      setHint('数を 入れてね', 'warn');
       return;
     }
-    const st = STAGES[idx];
-    const hit = Math.abs(v - st.y / st.x) <= EPS;
+    const st = list[idx];
+    const hit = Math.abs(v - answerOf(kind, st)) <= EPS;
     used++;
     busy = true;
     updateTop();
@@ -135,19 +165,28 @@
       if (used >= TRIES) return finish(0);
       input = '';
       updateBox();
-      setHint('はずれ！ うすい線を ヒントに もう一回');
+      if (used === TRIES - 1) {
+        // 2打目を外したら手がかりを光らせる
+        Graph.showHint();
+        setHint(kind === 'prop'
+          ? 'ヒント：カップへの線は、x＝1 のとき y は いくつ？'
+          : 'ヒント：光った 長方形の ます目は いくつ？', 'tip');
+      } else {
+        setHint('はずれ！ うすい線を ヒントに もう一回');
+      }
     });
   }
 
   function finish(stars) {
     over = true;
-    const before = Store.bestStars(idx);
-    Store.finishStage(idx, stars);
+    const before = random ? 0 : Store.bestStars(kind, idx);
+    if (random) runStars[idx] = stars;
+    else Store.finishStage(kind, idx, stars);
     Graph.end(stars === 0);
     updateTop();
 
-    const st = STAGES[idx];
-    const ans = fmt(st.y / st.x);
+    const st = list[idx];
+    const ans = fmt(answerOf(kind, st));
     if (stars === 0) { input = ans; updateBox(); }
     $('rTitle').textContent = stars > 0 ? (used === 1 ? 'ホールインワン！' : 'カップイン！') : 'ざんねん…';
     const rs = $('rStars');
@@ -158,12 +197,13 @@
       if (n < stars) { s.className = 'on'; s.style.animationDelay = `${0.15 + n * 0.25}s`; }
       rs.appendChild(s);
     }
+    const calc = kind === 'prop' ? `${st.y} ÷ ${st.x} ＝ <b>${ans}</b>` : `${st.x} × ${st.y} ＝ <b>${ans}</b>`;
     $('rCalc').innerHTML =
       `<p>カップは <b>(${st.x}, ${st.y})</b></p>` +
-      `<p class="calc">${st.y} ÷ ${st.x} ＝ <b>${ans}</b></p>` +
-      `<p>y ＝ ${ans} × x</p>`;
+      `<p class="calc">${calc}</p>` +
+      `<p>y ＝ ${ans} ${course().op} x</p>`;
     $('rBest').textContent = before > stars ? `これまでの いちばん：${starText(before)}` : '';
-    $('btnNext').textContent = idx + 1 < STAGES.length ? 'つぎへ' : 'けっかを 見る';
+    $('btnNext').textContent = idx + 1 < HOLES ? 'つぎへ' : 'けっかを 見る';
     $('pad').hidden = true;
     $('hint').hidden = true;
     $('result').hidden = false;
@@ -175,24 +215,40 @@
     if (b) press(b.dataset.k);
   });
   $('btnNext').addEventListener('click', () => {
-    if (idx + 1 < STAGES.length) startStage(idx + 1);
+    if (idx + 1 < HOLES) startStage(idx + 1);
     else showFinal();
   });
   $('btnBack').addEventListener('click', () => { if (!busy) showTitle(); });
 
   // ---------- 10面のあと ----------
   function showFinal() {
-    $('fTotal').innerHTML = `★ ${Store.total()} <small>/ ${STAGES.length * 3}</small>`;
-    const list = $('fList');
-    list.textContent = '';
-    STAGES.forEach((_, i) => {
+    const d = new Date();
+    $('fDate').textContent = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+    $('fTitle').textContent = `${random ? 'ランダム' : ''}${course().name}コース おわり！`;
+    let total, starsOf;
+    if (random) {
+      total = runStars.reduce((a, b) => a + b, 0);
+      const before = Store.finishRandom(kind, total);
+      starsOf = i => runStars[i];
+      $('fBest').textContent = total > before ? 'いちばん よい きろく！' : `いちばん よい ★の ごうけい ${before}`;
+    } else {
+      total = Store.total(kind);
+      starsOf = i => Store.bestStars(kind, i);
+      $('fBest').textContent = '';
+    }
+    $('fTotal').innerHTML = `★ ${total} <small>/ ${HOLES * 3}</small>`;
+    const ol = $('fList');
+    ol.textContent = '';
+    list.forEach((_, i) => {
       const li = document.createElement('li');
-      li.innerHTML = `<span>ホール${i + 1}</span><span class="s">${starText(Store.bestStars(i))}</span>`;
-      list.appendChild(li);
+      li.innerHTML = `<span>${random ? 'ランダム' : 'ホール'}${i + 1}</span><span class="s">${starText(starsOf(i))}</span>`;
+      ol.appendChild(li);
     });
+    $('btnAgain').hidden = !random;
     show('final');
   }
   $('btnFinalTitle').addEventListener('click', showTitle);
+  $('btnAgain').addEventListener('click', () => startCourse(true, 0));
 
   // ---------- はじめ ----------
   Store.load();
